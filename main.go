@@ -7,10 +7,10 @@ import (
 
 func main() {
 	done := make(chan struct{}, 0)
-
 	js.Global().Set("generatePrivateKey", js.FuncOf(jsGeneratePrivateKey))
-	js.Global().Set("verifyPrivateKey", js.FuncOf(jsVerifyPrivateKey))
+	js.Global().Set("isPrivateKeyValid", js.FuncOf(jsVerifyPrivateKey))
 	js.Global().Set("convertPrivateKeyToPublicKey", js.FuncOf(jsConvertPrivateKeyToPublicKey))
+	js.Global().Set("isPEMEncrypted", js.FuncOf(jsIsEncryptedPemBlock))
 	<-done
 }
 
@@ -39,4 +39,9 @@ func jsConvertPrivateKeyToPublicKey(this js.Value, args []js.Value) interface{} 
 	}
 
 	return publicKey
+}
+
+func jsIsEncryptedPemBlock(this js.Value, args []js.Value) interface{} {
+	key := args[0].String()
+	return isEncryptedPemBlock(key)
 }
