@@ -1,23 +1,39 @@
 import "./wasm_exec.js"
-import {readFileSync} from "fs"
-
 var getGlobal = function () {
     if (typeof self !== 'undefined') { return self; }
     if (typeof window !== 'undefined') { return window; }
     if (typeof global !== 'undefined') { return global; }
     throw new Error('unable to locate global object');
 };
-  
-var go;
-async function start() {
-    go = new Go();
-    var result;
-    try {
-        result = await WebAssembly.instantiateStreaming(fetch("./ssh-keygen.wasm"), go.importObject)
-    } catch (e) {
-        const wasmBuffer = readFileSync('./ssh-keygen.wasm');
-        result = await WebAssembly.instantiate(wasmBuffer, go.importObject)
+if (fs !== undefined) {
+    import("fs").then((fs) => {
+        getGlobal().readFileSync = fs.readFileSync
+    })
+}
+
+async function loadWasmBinary(path) {
+    const wasmPath = path || 'scripts/ssh-keygen.wasm';
+    if (typeof require === 'function') {
+        return Promise.resolve(require(wasmPath).then(
+            (wasmModule) => {
+                return decodeWasmBinary(wasmModule);
+            }
+        ))
     }
+
+    try {
+        return await WebAssembly.instantiateStreaming(fetch(wasmPath), go.importObject)
+    } catch (e) {
+        const wasmBuffer = getGlobal().readFileSync(wasmPath);
+        return await WebAssembly.instantiate(wasmBuffer, go.importObject)
+    }
+}
+
+var go;
+export async function start(wasmPath) {
+    go = new Go();
+
+    var result = await loadWasmBinary(wasmPath);
     go.run(result.instance)
 }
 

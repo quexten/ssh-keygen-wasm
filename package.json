@@ -1,9 +1,9 @@
 {
   "name": "ssh-keygen-wasm",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "This module is a small wrapper around Go's ssh library.",
   "type": "module",
-  "main": "index.js",
+  "main": "wrapper.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
